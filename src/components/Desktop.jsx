@@ -1,29 +1,56 @@
+import DesktopIcon from "./DesktopIcon";
+
 export default function Desktop() {
+  
+  const handleIconOpen = (iconName) => {
+    alert(`You opened: ${iconName}\n\nWindows coming in the next step!`);
+  };
+  
   return (
     <div style={{
       width: '100vw',
       height: '100vh',
-      background: '#008080c0',
+      background: '#008080',
       position: 'relative',
       overflow: 'hidden'
     }}>
+      
+      {/* Desktop Icons */}
       <div style={{
         position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        color: 'white',
-        fontSize: '24px',
-        fontFamily: 'MS Sans Serif, sans-serif',
-        textAlign: 'center',
-        textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
+        top: '20px',
+        left: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px'
       }}>
-        <p>🖥️</p>
-        <p>Desktop loaded successfully!</p>
-        <p style={{ fontSize: '14px', marginTop: '10px', opacity: 0.8 }}>
-          (Desktop icons and taskbar coming in next steps)
-        </p>
+        <DesktopIcon 
+        icon="../icons/folder.svg" 
+        label="My Computer" 
+        onDoubleClick={() => handleIconOpen('My Computer')}
+        />
+        <DesktopIcon 
+          icon="../icons/folder.svg" 
+          label="Projects" 
+          onDoubleClick={() => handleIconOpen('Projects')}
+        />
+        <DesktopIcon 
+          icon="../icons/folder.svg" 
+          label="About Me" 
+          onDoubleClick={() => handleIconOpen('About Me')}
+        />
+        <DesktopIcon 
+          icon="../icons/folder.svg" 
+          label="Contact" 
+          onDoubleClick={() => handleIconOpen('Contact')}
+        />
+        <DesktopIcon 
+          icon="../icons/folder.svg" 
+          label="Resume" 
+          onDoubleClick={() => handleIconOpen('Resume')}
+        />
       </div>
+      
     </div>
   );
 }
