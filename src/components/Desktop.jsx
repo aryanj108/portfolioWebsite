@@ -1,20 +1,48 @@
 import { useState, useEffect } from "react";
 import DesktopIcon from "./DesktopIcon";
+import Window from "./Window";
+import { AboutContent, ProjectsContent, ContactContent, ResumeContent, MyComputerContent } from "./WindowContents";
 
 export default function Desktop() {
   const [time, setTime] = useState(new Date());
+  const [windows, setWindows] = useState([]);
+  const [nextZIndex, setNextZIndex] = useState(1);
   
-  // Update clock every second
   useEffect(() => {
     const timer = setInterval(() => {
       setTime(new Date());
     }, 1000);
-    
     return () => clearInterval(timer);
   }, []);
   
-  const handleIconOpen = (iconName) => {
-    alert(`You opened: ${iconName}\n\nWindows coming in the next step!`);
+  const openWindow = (title, content, width = '500px') => {
+    const newWindow = {
+      id: Date.now(),
+      title,
+      content,
+      isMinimized: false,
+      zIndex: nextZIndex,
+      width
+    };
+    setWindows([...windows, newWindow]);
+    setNextZIndex(nextZIndex + 1);
+  };
+  
+  const closeWindow = (id) => {
+    setWindows(windows.filter(w => w.id !== id));
+  };
+  
+  const minimizeWindow = (id) => {
+    setWindows(windows.map(w => 
+      w.id === id ? { ...w, isMinimized: !w.isMinimized } : w
+    ));
+  };
+  
+  const focusWindow = (id) => {
+    setWindows(windows.map(w => 
+      w.id === id ? { ...w, zIndex: nextZIndex } : w
+    ));
+    setNextZIndex(nextZIndex + 1);
   };
   
   return (
@@ -36,31 +64,47 @@ export default function Desktop() {
         gap: '20px'
       }}>
         <DesktopIcon 
-          icon="/icons/folderLogo.svg" 
+          icon="/icons/folder.svg" 
           label="My Computer" 
-          onDoubleClick={() => handleIconOpen('My Computer')}
+          onDoubleClick={() => openWindow('My Computer', <MyComputerContent />)}
         />
         <DesktopIcon 
-          icon="/icons/folderLogo.svg" 
+          icon="/icons/folder.svg" 
           label="Projects" 
-          onDoubleClick={() => handleIconOpen('Projects')}
+          onDoubleClick={() => openWindow('Projects', <ProjectsContent />, '600px')}
         />
         <DesktopIcon 
-          icon="/icons/folderLogo.svg" 
+          icon="/icons/folder.svg" 
           label="About Me" 
-          onDoubleClick={() => handleIconOpen('About Me')}
+          onDoubleClick={() => openWindow('About Me', <AboutContent />)}
         />
         <DesktopIcon 
-          icon="/icons/folderLogo.svg" 
+          icon="/icons/folder.svg" 
           label="Contact" 
-          onDoubleClick={() => handleIconOpen('Contact')}
+          onDoubleClick={() => openWindow('Contact', <ContactContent />)}
         />
         <DesktopIcon 
-          icon="/icons/folderLogo.svg" 
+          icon="/icons/folder.svg" 
           label="Resume" 
-          onDoubleClick={() => handleIconOpen('Resume')}
+          onDoubleClick={() => openWindow('Resume', <ResumeContent />)}
         />
       </div>
+      
+      {/* Windows */}
+      {windows.map(window => (
+        <Window
+          key={window.id}
+          title={window.title}
+          isMinimized={window.isMinimized}
+          zIndex={window.zIndex}
+          style={{ width: window.width }}
+          onClose={() => closeWindow(window.id)}
+          onMinimize={() => minimizeWindow(window.id)}
+          onFocus={() => focusWindow(window.id)}
+        >
+          {window.content}
+        </Window>
+      ))}
       
       {/* Taskbar */}
       <div style={{
@@ -81,60 +125,85 @@ export default function Desktop() {
         
         {/* Start Button */}
         <button style={{
-        height: '34px',
-        padding: '0 6px',
-        background: '#c0c0c0',
-        border: '2px solid',
-        borderColor: '#ffffff #000000 #000000 #ffffff',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '3px',
-        fontFamily: 'MS Sans Serif, sans-serif',
-        fontWeight: 'bold',
-        fontSize: '11px'
+          height: '36px',
+          padding: '0 8px',
+          background: '#c0c0c0',
+          border: '2px solid',
+          borderColor: '#ffffff #000000 #000000 #ffffff',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '3px',
+          fontFamily: 'MS Sans Serif, sans-serif',
+          fontWeight: 'bold',
+          fontSize: '11px'
         }}
         onMouseDown={(e) => {
-        e.currentTarget.style.borderColor = '#000000 #ffffff #ffffff #000000';
-        e.currentTarget.style.padding = '1px 7px 0 9px';
+          e.currentTarget.style.borderColor = '#000000 #ffffff #ffffff #000000';
+          e.currentTarget.style.padding = '1px 7px 0 9px';
         }}
         onMouseUp={(e) => {
-        e.currentTarget.style.borderColor = '#ffffff #000000 #000000 #ffffff';
-        e.currentTarget.style.padding = '0 8px';
+          e.currentTarget.style.borderColor = '#ffffff #000000 #000000 #ffffff';
+          e.currentTarget.style.padding = '0 8px';
         }}
         onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = '#ffffff #000000 #000000 #ffffff';
-        e.currentTarget.style.padding = '0 8px';
+          e.currentTarget.style.borderColor = '#ffffff #000000 #000000 #ffffff';
+          e.currentTarget.style.padding = '0 8px';
         }}
         >
-        <img src="/icons/windowsLogo.svg" alt="Windows" width="14" height="14" />
-        Start
+          <img src="/icons/windowsLogo.svg" alt="Windows" width="14" height="14" />
+          Start
         </button>
-
-        {/* Empty space for open windows */}
-        <div style={{ flex: 1 }}></div>
-
-        {/* System Tray with Clock */}
+        
+        {/* Taskbar Window Buttons */}
+        <div style={{ flex: 1, display: 'flex', gap: '2px' }}>
+          {windows.map(window => (
+            <button
+              key={window.id}
+              onClick={() => minimizeWindow(window.id)}
+              style={{
+                height: '28px',
+                padding: '0 10px',
+                background: window.isMinimized ? '#c0c0c0' : '#ffffff',
+                border: '2px solid',
+                borderColor: window.isMinimized 
+                  ? '#ffffff #000000 #000000 #ffffff'
+                  : '#000000 #ffffff #ffffff #000000',
+                cursor: 'pointer',
+                fontFamily: 'MS Sans Serif, sans-serif',
+                fontSize: '11px',
+                maxWidth: '150px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {window.title}
+            </button>
+          ))}
+        </div>
+        
+        {/* System Tray */}
         <div style={{
-        height: '28px',
-        padding: '0 10px',
-        background: '#c0c0c0',
-        border: '1px solid',
-        borderColor: '#808080 #ffffff #ffffff #808080',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        fontSize: '11px',
-        fontFamily: 'MS Sans Serif, sans-serif'
+          height: '28px',
+          padding: '0 10px',
+          background: '#c0c0c0',
+          border: '1px solid',
+          borderColor: '#808080 #ffffff #ffffff #808080',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          fontSize: '11px',
+          fontFamily: 'MS Sans Serif, sans-serif'
         }}>
-        <img src="/icons/volumeLogo.svg" alt="Volume" width="16" height="16" />
-        <span>
+          <img src="/icons/volumeLogo.svg" alt="Volume" width="16" height="16" />
+          <span>
             {time.toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            hour12: true 
+              hour: '2-digit', 
+              minute: '2-digit',
+              hour12: true 
             })}
-        </span>
+          </span>
         </div>
       </div>
       
